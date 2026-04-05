@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "agnibesh.24x7@gmail.com" || 
+        request.auth.token.email == "ashapurna2025@ashapurna.com"
+      );
+    }
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /queries/{queryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || !isAuthenticated();
+    }
+    match /expenses/{expenseId} {
+      allow read, write: if isAdmin();
+    }
+    match /openingBalances/{balanceId} {
+      allow read, write: if isAdmin();
+    }
+    match /config/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

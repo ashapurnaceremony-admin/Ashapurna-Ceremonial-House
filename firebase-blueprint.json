@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "Booking": {
+      "title": "Booking",
+      "description": "Represents a banquet hall booking.",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string", "description": "Name of the customer." },
+        "address": { "type": "string", "description": "Address of the customer." },
+        "phoneNumber": { "type": "string", "description": "Contact number." },
+        "eventDate": { "type": "string", "format": "date", "description": "Date of the event." },
+        "occasion": { "type": "string", "description": "Type of occasion." },
+        "noOfGuests": { "type": "number", "description": "Number of guests." },
+        "floorsRented": { "type": "string", "description": "Floors rented." },
+        "totalAmount": { "type": "number", "description": "Total rent amount." },
+        "advancePaid": { "type": "number", "description": "Advance paid amount." },
+        "balanceDue": { "type": "number", "description": "Remaining balance." },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "UPI", "Transfer"], "description": "Mode of payment." },
+        "status": { "type": "string", "enum": ["Pending", "Completed"], "description": "Booking status." },
+        "receiptNo": { "type": "string", "description": "Unique receipt number." },
+        "notes": { "type": "string", "description": "Additional notes or special requests." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp." },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "amount": { "type": "number" },
+              "date": { "type": "string", "format": "date-time" },
+              "method": { "type": "string" },
+              "type": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["customerName", "phoneNumber", "eventDate", "totalAmount", "advancePaid"]
+    },
+    "Query": {
+      "title": "Query",
+      "description": "Represents a customer enquiry.",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "eventDate": { "type": "string", "format": "date" },
+        "occasion": { "type": "string" },
+        "approxGuests": { "type": "number" },
+        "quotedPrice": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Represents a business expense.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "OpeningBalance": {
+      "title": "OpeningBalance",
+      "description": "Represents the opening balance for a financial year.",
+      "type": "object",
+      "properties": {
+        "bankBalance": { "type": "number" },
+        "cashInHand": { "type": "number" },
+        "year": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/bookings": { "schema": "Booking", "description": "Collection of bookings." },
+    "/queries": { "schema": "Query", "description": "Collection of enquiries." },
+    "/expenses": { "schema": "Expense", "description": "Collection of expenses." },
+    "/openingBalances": { "schema": "OpeningBalance", "description": "Collection of opening balances." }
+  }
+}

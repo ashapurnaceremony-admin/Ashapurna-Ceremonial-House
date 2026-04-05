@@ -1,0 +1,5 @@
+{
+  "name": "Ashapurna Banquet Hall Management",
+  "description": "A comprehensive management system for Ashapurna Banquet Hall, including bookings, queries, expenses, and PDF/Excel generation.",
+  "requestFramePermissions": []
+}
