@@ -357,6 +357,10 @@ export default function App() {
     const monthlyIncome = allPayments.filter(p => getMonth(new Date(p.date)) === getMonth(now) && getYear(new Date(p.date)) === getYear(now)).reduce((acc, p) => acc + p.amount, 0);
     const monthlyExpenses = expenses.filter(e => getMonth(new Date(e.date)) === getMonth(now) && getYear(new Date(e.date)) === getYear(now) && e.category !== 'Cash Deposited to Bank').reduce((acc, e) => acc + e.amount, 0);
     
+    const completedYearlyIncome = filteredBookings.filter(b => b.status === 'Completed').reduce((acc, b) => acc + b.totalAmount, 0);
+    const projectedYearlyIncome = filteredBookings.reduce((acc, b) => acc + b.totalAmount, 0);
+    const averageMonthlyIncome = projectedYearlyIncome / 12;
+
     const yearlyIncome = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
     const yearlyExpenses = filteredExpenses.filter(e => e.category !== 'Cash Deposited to Bank').reduce((acc, e) => acc + e.amount, 0);
     
@@ -369,6 +373,7 @@ export default function App() {
     const cashDepositedToBank = filteredExpenses.filter(e => e.category === 'Cash Deposited to Bank').reduce((acc, e) => acc + e.amount, 0);
     return { 
       monthlyIncome, monthlyExpenses, yearlyIncome, yearlyExpenses,
+      completedYearlyIncome, projectedYearlyIncome, averageMonthlyIncome,
       cashInHand: opening.cashInHand + cashIncome - cashExpenses - cashDepositedToBank,
       bankBalance: opening.bankBalance + bankIncome - bankExpenses + cashDepositedToBank,
       opening 
@@ -584,11 +589,16 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="p-6 bg-blue-50 rounded-xl border border-blue-100"><span className="text-blue-800 block mb-1 text-sm font-bold">Bank Balance</span><span className="text-2xl font-bold text-blue-700">₹{stats.bankBalance}</span></div>
-                  <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-100"><span className="text-emerald-800 block mb-1 text-sm font-bold">Cash in Hand</span><span className="text-2xl font-bold text-emerald-700">₹{stats.cashInHand}</span></div>
-                  <div className="p-6 bg-amber-50 rounded-xl border border-amber-100"><span className="text-amber-800 block mb-1 text-sm font-bold">Yearly Income</span><span className="text-2xl font-bold text-amber-700">₹{stats.yearlyIncome}</span></div>
-                  <div className="p-6 bg-red-50 rounded-xl border border-red-100"><span className="text-red-800 block mb-1 text-sm font-bold">Yearly Expenses</span><span className="text-2xl font-bold text-red-700">₹{stats.yearlyExpenses}</span></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                  <div className="p-6 bg-blue-50 rounded-xl border border-blue-100"><span className="text-blue-800 block mb-1 text-sm font-bold">Bank Balance</span><span className="text-2xl font-bold text-blue-700">₹{stats.bankBalance.toLocaleString()}</span></div>
+                  <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-100"><span className="text-emerald-800 block mb-1 text-sm font-bold">Cash in Hand</span><span className="text-2xl font-bold text-emerald-700">₹{stats.cashInHand.toLocaleString()}</span></div>
+                  <div className="p-6 bg-red-50 rounded-xl border border-red-100"><span className="text-red-800 block mb-1 text-sm font-bold">Yearly Expenses</span><span className="text-2xl font-bold text-red-700">₹{stats.yearlyExpenses.toLocaleString()}</span></div>
+                  
+                  <div className="p-6 bg-amber-50 rounded-xl border border-amber-100"><span className="text-amber-800 block mb-1 text-sm font-bold">Actual Income (Received)</span><span className="text-2xl font-bold text-amber-700">₹{stats.yearlyIncome.toLocaleString()}</span></div>
+                  <div className="p-6 bg-purple-50 rounded-xl border border-purple-100"><span className="text-purple-800 block mb-1 text-sm font-bold">Completed Work Income</span><span className="text-2xl font-bold text-purple-700">₹{stats.completedYearlyIncome.toLocaleString()}</span></div>
+                  <div className="p-6 bg-indigo-50 rounded-xl border border-indigo-100"><span className="text-indigo-800 block mb-1 text-sm font-bold">Projected Annual Income</span><span className="text-2xl font-bold text-indigo-700">₹{stats.projectedYearlyIncome.toLocaleString()}</span></div>
+                  
+                  <div className="p-6 bg-cyan-50 rounded-xl border border-cyan-100"><span className="text-cyan-800 block mb-1 text-sm font-bold">Avg. Monthly Income (Projected)</span><span className="text-2xl font-bold text-cyan-700">₹{Math.round(stats.averageMonthlyIncome).toLocaleString()}</span></div>
                 </div>
                 <div className="flex justify-end">
                   <button onClick={() => setShowOpeningBalanceForm(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-all text-sm font-bold border border-amber-200">
