@@ -82,6 +82,7 @@ export default function App() {
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [editingQuery, setEditingQuery] = useState<BookingQuery | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [showFinalReceiptModal, setShowFinalReceiptModal] = useState<Booking | null>(null);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -259,12 +260,17 @@ export default function App() {
       category: formData.get('category') as ExpenseCategory,
       description: formData.get('description') as string,
       paymentMethod: formData.get('paymentMethod') as PaymentMethod,
-      createdAt: new Date().toISOString()
+      createdAt: editingExpense ? editingExpense.createdAt : new Date().toISOString()
     };
     try {
-      await addDoc(collection(db, 'expenses'), expenseData);
+      if (editingExpense) {
+        await updateDoc(doc(db, 'expenses', editingExpense.id!), expenseData);
+        setEditingExpense(null);
+      } else {
+        await addDoc(collection(db, 'expenses'), expenseData);
+      }
       setShowExpenseForm(false);
-    } catch (err) { handleFirestoreError(err, 'create', 'expenses'); }
+    } catch (err) { handleFirestoreError(err, editingExpense ? 'update' : 'create', 'expenses'); }
   };
 
   const handleAddOpeningBalance = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -564,7 +570,10 @@ export default function App() {
                         <td className="px-6 py-4 text-sm text-gray-600">{expense.paymentMethod}</td>
                         <td className="px-6 py-4 text-sm font-bold text-red-600 text-right">₹{expense.amount}</td>
                         <td className="px-6 py-4 text-center">
-                          <button onClick={() => setItemToDelete({ id: expense.id!, type: 'expenses' })} className="p-2 text-gray-400 hover:text-red-600"><Trash2 size={18} /></button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => { setEditingExpense(expense); setShowExpenseForm(true); }} className="p-2 text-gray-400 hover:text-amber-600"><Edit2 size={18} /></button>
+                            <button onClick={() => setItemToDelete({ id: expense.id!, type: 'expenses' })} className="p-2 text-gray-400 hover:text-red-600"><Trash2 size={18} /></button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -670,14 +679,14 @@ export default function App() {
       {showExpenseForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8">
-            <h2 className="text-2xl font-serif font-bold text-amber-900 mb-6">Add Expense</h2>
+            <h2 className="text-2xl font-serif font-bold text-amber-900 mb-6">{editingExpense ? 'Edit Expense' : 'Add Expense'}</h2>
             <form onSubmit={handleAddExpense} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><label className="block text-sm font-medium mb-1">Date</label><input type="date" name="date" defaultValue={format(new Date(), 'yyyy-MM-dd')} required className="w-full px-4 py-2 rounded-lg border" /></div>
-              <div><label className="block text-sm font-medium mb-1">Amount</label><input type="number" step="any" name="amount" required className="w-full px-4 py-2 rounded-lg border" /></div>
-              <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Category</label><select name="category" required className="w-full px-4 py-2 rounded-lg border"><option>Maintenance & Repairs</option><option>Electricity & Utilities</option><option>Staff Salary & Wages</option><option>Marketing & Advertising</option><option>Cleaning & Supplies</option><option>Refund / Cancellation</option><option>Cash Deposited to Bank</option><option>Miscellaneous / Others</option></select></div>
-              <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Description</label><input name="description" required className="w-full px-4 py-2 rounded-lg border" /></div>
-              <div><label className="block text-sm font-medium mb-1">Payment Mode</label><select name="paymentMethod" className="w-full px-4 py-2 rounded-lg border"><option>Cash</option><option>UPI</option><option>Transfer</option></select></div>
-              <div className="md:col-span-2 flex gap-3 pt-4"><button type="submit" className="flex-1 bg-amber-700 text-white font-bold py-3 rounded-lg">Add Expense</button><button type="button" onClick={() => setShowExpenseForm(false)} className="px-6 py-3 bg-gray-100 rounded-lg">Cancel</button></div>
+              <div><label className="block text-sm font-medium mb-1">Date</label><input type="date" name="date" defaultValue={editingExpense?.date || format(new Date(), 'yyyy-MM-dd')} required className="w-full px-4 py-2 rounded-lg border" /></div>
+              <div><label className="block text-sm font-medium mb-1">Amount</label><input type="number" step="any" name="amount" defaultValue={editingExpense?.amount} required className="w-full px-4 py-2 rounded-lg border" /></div>
+              <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Category</label><select name="category" defaultValue={editingExpense?.category} required className="w-full px-4 py-2 rounded-lg border"><option>Maintenance & Repairs</option><option>Electricity & Utilities</option><option>Staff Salary & Wages</option><option>Marketing & Advertising</option><option>Cleaning & Supplies</option><option>Refund / Cancellation</option><option>Cash Deposited to Bank</option><option>Miscellaneous / Others</option></select></div>
+              <div className="md:col-span-2"><label className="block text-sm font-medium mb-1">Description</label><input name="description" defaultValue={editingExpense?.description} required className="w-full px-4 py-2 rounded-lg border" /></div>
+              <div><label className="block text-sm font-medium mb-1">Payment Mode</label><select name="paymentMethod" defaultValue={editingExpense?.paymentMethod} className="w-full px-4 py-2 rounded-lg border"><option>Cash</option><option>UPI</option><option>Transfer</option></select></div>
+              <div className="md:col-span-2 flex gap-3 pt-4"><button type="submit" className="flex-1 bg-amber-700 text-white font-bold py-3 rounded-lg">{editingExpense ? 'Update Expense' : 'Add Expense'}</button><button type="button" onClick={() => { setShowExpenseForm(false); setEditingExpense(null); }} className="px-6 py-3 bg-gray-100 rounded-lg">Cancel</button></div>
             </form>
           </div>
         </div>
