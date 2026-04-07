@@ -450,7 +450,7 @@ export default function App() {
             <button onClick={() => exportToExcel(bookings, queries, expenses)} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm text-sm font-medium"><Download size={18} /> Export Excel</button>
             {activeTab === 'bookings' && <button onClick={() => setShowBookingForm(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all shadow-md text-sm font-medium"><Plus size={18} /> New Booking</button>}
             {activeTab === 'queries' && <button onClick={() => setShowQueryForm(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all shadow-md text-sm font-medium"><Plus size={18} /> New Query</button>}
-            {activeTab === 'expenses' && <button onClick={() => setShowExpenseForm(true)} className="flex items-center gap-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all shadow-md text-sm font-medium"><Plus size={18} /> Add Expense</button>}
+            {activeTab === 'expenses' && <button onClick={() => { setEditingExpense(null); setShowExpenseForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all shadow-md text-sm font-medium"><Plus size={18} /> Add Expense</button>}
           </div>
         </header>
 
@@ -549,8 +549,8 @@ export default function App() {
 
           {activeTab === 'expenses' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+              <div className="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="bg-amber-50">
                       <th className="px-6 py-4 text-sm font-bold text-amber-900">Date</th>
@@ -562,7 +562,13 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {expenses.map(expense => (
+                    {expenses.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-medium">
+                          No expenses found for the current period.
+                        </td>
+                      </tr>
+                    ) : expenses.map(expense => (
                       <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-sm text-gray-600">{format(new Date(expense.date), 'dd MMM yyyy')}</td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{expense.category}</td>
@@ -571,8 +577,18 @@ export default function App() {
                         <td className="px-6 py-4 text-sm font-bold text-red-600 text-right">₹{expense.amount}</td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => { setEditingExpense(expense); setShowExpenseForm(true); }} className="p-2 text-gray-400 hover:text-amber-600"><Edit2 size={18} /></button>
-                            <button onClick={() => setItemToDelete({ id: expense.id!, type: 'expenses' })} className="p-2 text-gray-400 hover:text-red-600"><Trash2 size={18} /></button>
+                            <button 
+                              onClick={() => { setEditingExpense(expense); setShowExpenseForm(true); }} 
+                              className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg transition-colors text-xs font-bold"
+                            >
+                              <Edit2 size={14} /> Edit
+                            </button>
+                            <button 
+                              onClick={() => setItemToDelete({ id: expense.id!, type: 'expenses' })} 
+                              className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors text-xs font-bold"
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
